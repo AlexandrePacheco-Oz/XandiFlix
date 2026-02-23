@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stream Séries</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
+    body { background:#141414; color:#fff; }
+
+    header {
+      padding:20px 40px;
+      font-size:28px;
+      font-weight:600;
+      color:#e50914;
+    }
+
+    .catalogo {
+      padding:20px 24px;
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
+      gap:12px;
+    }
+
+    .serie-card {
+      background:#222;
+      border-radius:10px;
+      overflow:hidden;
+      cursor:pointer;
+      transition:transform .25s, box-shadow .25s;
+      max-width: 180px;
+      margin: auto;
+    }
+
+    .serie-card:hover {
+      transform:scale(1.05);
+      box-shadow:0 20px 40px rgba(0,0,0,.6);
+    }
+
+    .serie-card img {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .serie-info { padding:12px; }
+    .serie-info h3 { font-size:16px; }
+    .serie-info p { font-size:13px; opacity:.7; }
+
+    /* MODAL */
+    .modal {
+      display:none;
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.95);
+      z-index:999;
+      justify-content:center;
+      align-items:center;
+    }
+
+    .modal-box {
+      width:90%;
+      max-width:1100px;
+      background:#000;
+      border-radius:12px;
+      padding:20px;
+    }
+
+    .close {
+      float:right;
+      font-size:28px;
+      cursor:pointer;
+    }
+
+    .episodes {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+      gap:10px;
+      margin-top:15px;
+    }
+
+    .episode {
+      background:#222;
+      padding:10px;
+      text-align:center;
+      border-radius:6px;
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    .episode:hover { background:#e50914; }
+
+    iframe {
+      margin-top:20px;
+      width:100%;
+      height:480px;
+      border-radius:8px;
+    }
+      
+    @media{
+
+      .catalogo {
+        padding: 16px;
+        gap: 10px;
+      }
+
+      .serie-card {
+        border-radius: 10px;
+      }
+
+      iframe {
+        height: 260px;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+<header>🎬 XandiFlix</header>
+
+<main class="catalogo">
+
+  <!-- SÉRIE 1 -->
+  <div class="serie-card" onclick="openSerie('serie1')">
+    <img src="./MV5BZTBmYzk5ZjYtNTlmOC00OWMzLWJiNjUtNzA2MDU3MzQyZjJlXkEyXkFqcGc@._V1_.jpg">
+    <div class="serie-info">
+      <h3>All Her Fault</h3>
+      <p>Temporada 1</p>
+    </div>
+  </div>
+
+  <!-- SÉRIE 2 -->
+  <div class="serie-card" onclick="openSerie('serie2')">
+    <img src="https://images.unsplash.com/photo-1517602302552-471fe67acf66">
+    <div class="serie-info">
+      <h3>Série Dois</h3>
+      <p>Temporada 1</p>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODAL SÉRIE -->
+<div id="serieModal" class="modal">
+  <div class="modal-box">
+    <span class="close" onclick="closeSerie()">×</span>
+    <h2 id="serieTitle"></h2>
+    <p>Escolha um episódio</p>
+
+    <div id="episodesList" class="episodes"></div>
+
+    <iframe id="player" allowfullscreen allow="autoplay" frameborder="0" scrolling="no"></iframe>
+  </div>
+</div>
+
+<script>
+  const series = {
+    serie1: {
+      title: 'Série Exemplo',
+      episodes: [
+        { name: 'EP 01', url: 'https://streamtape.com/e/MPMYggQ9PahmOmo/' },
+        { name: 'EP 02', url: 'https://streamtape.com/e/vrd8reQ7PxI4v9r/' },
+        { name: 'EP 03', url: 'https://streamtape.com/e/BawyWgDjpohyxjG/' },
+        { name: 'EP 04', url: 'https://streamtape.com/e/Ox0dLqodGgcZpvd/' },
+        { name: 'EP 05', url: 'https://streamtape.com/e/7qDYVWPKqrtAZzB/' },
+        { name: 'EP 06', url: 'https://streamtape.com/e/lxaVy69bjgI77Qo/' },
+        { name: 'EP 07', url: 'https://streamtape.com/e/RgeK6jJ8yPFdAbj/' },
+        { name: 'EP 08', url: 'https://streamtape.com/e/oGVqgjoMaXcOJm/' },
+      ]
+    },
+    serie2: {
+      title: 'Série Dois',
+      episodes: [
+        { name: 'EP 01', url: 'https://streamtape.com/e/7qDYVWPKqrtAZzB/' },
+        { name: 'EP 02', url: 'https://streamtape.com/e/7qDYVWPKqrtAZzB/' }
+      ]
+    }
+  };
+
+  function openSerie(key) {
+    const serie = series[key];
+    document.getElementById('serieTitle').innerText = serie.title;
+
+    const episodesDiv = document.getElementById('episodesList');
+    episodesDiv.innerHTML = '';
+
+    serie.episodes.forEach(ep => {
+      const div = document.createElement('div');
+      div.className = 'episode';
+      div.innerText = ep.name;
+      div.onclick = () => playEpisode(ep.url);
+      episodesDiv.appendChild(div);
+    });
+
+    document.getElementById('serieModal').style.display = 'flex';
+  }
+
+  function playEpisode(url) {
+    document.getElementById('player').src = url;
+  }
+
+  function closeSerie() {
+    document.getElementById('serieModal').style.display = 'none';
+    document.getElementById('player').src = '';
+  }
+</script>
+
+</body>
+</html>
